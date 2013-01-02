@@ -1,21 +1,26 @@
 require "deploy/base"
 
+require "colored"
+
 class Deploy::Shell < Deploy::Base
-  def run(*args, &block)
-    command = run!(*args, &block)
+  def run(command)
+    command.gsub!(/\s+/, " ")
 
-    puts session.servers.join(", ")
-    #session.exec(command)
-    puts command
-  end
+    puts session.servers.join(", ").green
+    puts command.bold
 
-  def run!(command, options = Hash.new, &block)
-    directory = options[:directory]
+    channel = session.exec(command) do |ch, stream, data|
+      puts "[#{ ch[:host] } : #{ stream }]".cyan + " #{ data }"
+    end
+    channel.wait
 
-    if directory
-      command = "cd #{ directory } && #{ command }"
+    failures = []
+    channel.each do |ch|
+      failures << ch[:host] if ch[:exit_status] != 0
     end
 
-    command
+    raise "Error on #{ failures.join(", ") }" unless failures.empty?
+
+    channel
   end
 end

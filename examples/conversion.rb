@@ -11,10 +11,6 @@ class Conversion < Deploy::Base
       server "convert-lcurley-sl6.dev.box.net"
       server "convert-sl6.dev.box.net"
     end
-
-    group :mirror do
-      server "publish.sv2.box.net"
-    end
   end
 
   def deploy
@@ -22,10 +18,13 @@ class Conversion < Deploy::Base
                :directory => "/box/lib/conversion_new", :branch => "publish")
 
     on :convert do
-      shell.run("bundle install --deployment --quiet --without test deploy",
-                :directory => "/box/lib/conversion_new")
+      shell.run("cd /box/lib/conversion_new &&
+                 bundle install --deployment --quiet --without test deploy &&
+                 echo \"Bundle installed\"")
     end
   end
 end
 
-Conversion.new.deploy
+conversion = Conversion.new
+conversion.deploy
+conversion.close
