@@ -1,5 +1,7 @@
-module Deploy::Git
-  def git_clone!(options)
+require "deploy/base"
+
+class Deploy::Git < Deploy::Base
+  def clone!(options)
     repository = options[:repository]
     directory = options[:directory]
 
@@ -12,7 +14,7 @@ module Deploy::Git
      git clone -o #{ remote } -b #{ branch } #{ repository } #{ directory }"
   end
 
-  def git_fetch!(options)
+  def fetch!(options)
     repository = options[:repository]
     directory = options[:directory]
 
@@ -30,11 +32,11 @@ module Deploy::Git
      git reset --hard #{ revision }"
   end
 
-  def git_update!(options)
+  def update!(options)
     directory = options[:directory]
 
     "if [ -d #{ directory }/.git ];
-     then #{ git_fetch!(options) };
-     else #{ git_clone!(options) }; fi"
+     then #{ fetch!(options) };
+     else #{ clone!(options) }; fi"
   end
 end
