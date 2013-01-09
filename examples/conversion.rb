@@ -2,29 +2,16 @@ require "bundler/setup"
 
 require "deploy"
 require "deploy/git"
+require "deploy/bundler"
+require "deploy/release"
 
-class Conversion < Deploy::Base
-  def initialize(session = nil)
-    super
-
-    group :convert do
-      server "convert-lcurley-sl6.dev.box.net"
-      server "convert-sl6.dev.box.net"
-    end
-  end
-
-  def deploy
+Deploy.start do
+  on "convert-lcurley-sl6.dev.box.net", "convert-sl6.dev.box.net" do
     git.update(:repository => "ssh://scm.dev.box.net/box/www/conversion",
-               :directory => "/box/lib/conversion_new", :branch => "publish")
+               :directory => "/box/lib/conversion_new/shared", :branch => "publish")
 
-    on :convert do
-      shell.run("cd /box/lib/conversion_new &&
-                 bundle install --deployment --quiet --without test deploy &&
-                 echo \"Bundle installed\"")
+    release.make("/box/lib/conversion_new", :base => "/box/lib/conversion_new/shared") do |dir|
+      bundler.install(:directory => dir, :without => [ :test, :deploy ])
     end
   end
 end
-
-conversion = Conversion.new
-conversion.deploy
-conversion.close

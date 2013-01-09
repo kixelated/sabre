@@ -1,6 +1,7 @@
 require "thread"
 
 require "net/ssh/multi"
+require "colored"
 require "highline"
 
 class Deploy::Base
@@ -25,13 +26,14 @@ class Deploy::Base
         server[:retry] = true
 
         PASSWORD_PROMPT.synchronize do
-          @@password ||= nil
-          unless @@password
-            @@password = HighLine.new.ask("Password: ") { |q| q.echo = false }
+          @password ||= nil
+
+          unless @password
+            @password = HighLine.new.ask("Password: ") { |q| q.echo = false }
           end
         end
 
-        server.options[:password] = @@password
+        server.options[:password] = @password
         server.options[:auth_methods] = %w(password keyboard-interactive)
 
         throw :go, :retry
@@ -42,8 +44,19 @@ class Deploy::Base
   end
 
   def on(*args)
+    options = { :auth_methods => %w(publickey hostbased) }
+    options.merge!(args.pop) if args.last.is_a?(Hash)
+
+    servers = args.collect_concat do |arg|
+      if arg.is_a?(String)
+        session.use(arg, options)
+      else
+        session.servers_for(arg)
+      end
+    end
+
     temp_session = session
-    @session = session.with(*args)
+    @session = session.on(*servers.uniq)
 
     begin
       yield
@@ -59,6 +72,29 @@ class Deploy::Base
     session.use(*args, options, &block)
   end
 
+  def run(command)
+    command.gsub!(/\s+/, " ")
+
+    puts session.servers.join(", ").green
+    puts command.bold
+
+    channel = session.exec(command) do |ch, stream, data|
+      puts "[#{ ch[:host] } : #{ stream }]".cyan + " #{ data }" unless data.chomp.empty?
+    end
+    channel.wait
+
+    failures = channel.select do |ch|
+      ch[:exit_status] != 0
+    end
+
+    unless failures.empty?
+      failed_hosts = failures.collect { |f| f[:host] }
+      raise "Error on #{ failed_hosts.join(", ") }"
+    end
+
+    channel
+  end
+
   def method_missing(method, *args, &block)
     # obj.git = Deploy::Git.new(obj.session)
     new_class_name = method.to_s.capitalize.to_sym
@@ -68,14 +104,12 @@ class Deploy::Base
       return new_class.new(session)
     end
 
-    # obj.foo = shell.run(obj.foo_command)
+    # obj.foo = run(obj.foo_command)
     new_method = "#{ method }_command".to_sym
 
     if respond_to?(new_method)
       command = send(new_method, *args)
-
-      require "deploy/shell"
-      return shell.run(command, &block)
+      return run(command, &block)
     end
 
     super
