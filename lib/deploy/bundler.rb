@@ -1,12 +1,12 @@
-require "deploy/base"
+require "deploy/command"
 
-class Deploy::Bundler < Deploy::Base
-  def install_command(options)
+class Deploy::Bundler < Deploy::Command
+  def install(options)
     directory = options[:directory]
     without = options[:without]
 
-    "cd #{ directory } &&
-     bundle install --deployment --quiet --without #{ without.join(" ") } &&
-     echo \"Bundle installed\""
+    cd directory
+    run "bundle install --deployment --quiet --without #{ without.join(" ") }"
+    echo "Bundle installed"
   end
 end

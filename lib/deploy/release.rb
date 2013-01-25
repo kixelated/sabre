@@ -1,32 +1,22 @@
-require "deploy/base"
+require "deploy/command"
 
-class Deploy::Release < Deploy::Base
-  def make(directory, options, &block)
-    base = options[:base] # optional
-
+class Deploy::Release < Deploy::Command
+  def make(directory, options = Hash.new, &block)
     current = options[:current] || "#{ directory }/current"
     releases = options[:releases] || "#{ directory }/releases"
 
-    directory = "#{ releases }/#{ Time.now.to_i }"
+    set "RELEASE", "#{ releases }/`date +%s`"
+    run %{ mkdir -p "$RELEASE" }
 
-    begin
-      if base
-        run "mkdir -p '#{ releases }' &&
-             cp -R '#{ base }' '#{ directory }'"
-      else
-        run "mkdir -p '#{ directory }'"
-      end
+    invoke(&block)
+    synchronize
 
-      yield(directory)
+    run %{ rm -f "#{ current }" }
+    run %{ ln -s "$RELEASE" "#{ current }" }
 
-      run "rm -f '#{ current }' &&
-           ln -s '#{ directory }' '#{ current }'"
-
-      run "ask 'Continue? (y/n) '"
-    rescue
-      run "echo 'Removing release #{ directory }' &&
-           rm -rf '#{ directory }'"
-      raise
+    on_error do
+      echo "Removing release $RELEASE"
+      run %{ rm -rf "$RELEASE" }
     end
   end
 end

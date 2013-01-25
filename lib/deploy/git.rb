@@ -1,42 +1,51 @@
-require "deploy/base"
+require "deploy/command"
 
-class Deploy::Git < Deploy::Base
-  def clone_command(options)
-    repository = options[:repository]
-    directory = options[:directory]
+module Deploy
+  class Git < Command
+    def clone(options)
+      repository = options[:repository]
+      directory = options[:directory]
 
-    branch = options[:branch] || "publish"
-    remote = options[:remote] || "origin"
+      branch = options[:branch] || "publish"
+      remote = options[:remote] || "origin"
 
-    revision = options[:revision] || "#{ remote }/#{ branch }"
+      revision = options[:revision] || "#{ remote }/#{ branch }"
 
-    "mkdir -p #{ directory } &&
-     git clone -o #{ remote } -b #{ branch } #{ repository } #{ directory }"
-  end
+      run "mkdir -p #{ directory }"
+      run "git clone -o #{ remote } -b #{ branch } #{ repository } #{ directory }"
+    end
 
-  def fetch_command(options)
-    repository = options[:repository]
-    directory = options[:directory]
+    def fetch(options)
+      repository = options[:repository]
+      directory = options[:directory]
 
-    branch = options[:branch] || "publish"
-    remote = options[:remote] || "origin"
+      branch = options[:branch] || "publish"
+      remote = options[:remote] || "origin"
 
-    revision = options[:revision] || "#{ remote }/#{ branch }"
+      revision = options[:revision] || "#{ remote }/#{ branch }"
 
-    "cd #{ directory } &&
-     git config remote.#{ remote }.url #{ repository } &&
-     git config remote.#{ remote }.fetch +refs/heads/*:refs/remotes/#{ remote }/* &&
-     git fetch #{ remote } &&
-     git fetch --tags #{ remote } &&
-     git checkout -f -q #{ branch } &&
-     git reset --hard #{ revision }"
-  end
+      cd directory
+      run "git config remote.#{ remote }.url #{ repository }"
+      run "git config remote.#{ remote }.fetch +refs/heads/*:refs/remotes/#{ remote }/*"
+      run "git fetch #{ remote }"
+      run "git fetch --tags #{ remote }"
+      run "git checkout -f -q #{ branch }"
+      run "git reset --hard #{ revision }"
+    end
 
-  def update_command(options)
-    directory = options[:directory]
+    def update(options)
+      directory = options[:directory]
 
-    "if [ -d #{ directory }/.git ];
-     then #{ fetch_command(options) };
-     else #{ clone_command(options) }; fi"
+      fetch_command = Git.new { fetch(options) }
+      clone_command = Git.new { clone(options) }
+
+      run %{
+        if [ -d "#{ directory }/.git" ]; then
+        #{ indent fetch_command }
+        else
+        #{ indent clone_command }
+        fi
+      }
+    end
   end
 end
