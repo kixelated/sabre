@@ -37,7 +37,7 @@ class Sabre::Command
     end
   end
 
-  def on_hosts(*hosts, &block)
+  def on_host(*hosts, &block)
     conditions = hosts.collect do |h|
       if h.is_a?(Regexp)
         "[[ `hostname -f` =~ \"#{ h.source }\" ]]"
