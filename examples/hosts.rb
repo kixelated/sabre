@@ -1,8 +1,7 @@
 require "bundler/setup"
+require "sabre"
 
-require "deploy"
-
-host = Deploy::Command.new do
+host = Sabre::Command.new do
   on_hosts /^convert/, "Luke-Curleys-MacBook-Pro.local" do
     echo "I am conversion"
     run "false"

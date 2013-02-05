@@ -1,3 +1,3 @@
-module Deploy
+module Sabre
   VERSION = "0.0.1"
 end

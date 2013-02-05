@@ -1,6 +1,6 @@
-require 'deploy/command'
+require 'sabre/command'
 
-class Deploy::Release < Deploy::Command
+class Sabre::Release < Sabre::Command
   def create(directory, options = Hash.new, &block)
     current = options[:current] || "#{ directory }/current"
     releases = options[:releases] || "#{ directory }/releases"

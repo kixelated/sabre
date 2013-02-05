@@ -1,11 +1,11 @@
 # -*- encoding: utf-8 -*-
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'deploy/version'
+require 'sabre/version'
 
 Gem::Specification.new do |gem|
-  gem.name          = "deploy"
-  gem.version       = Deploy::VERSION
+  gem.name          = "sabre"
+  gem.version       = Sabre::VERSION
   gem.authors       = ["Luke Curley"]
   gem.email         = ["qpingu@gmail.com"]
   gem.description   = %q{TODO: Write a gem description}

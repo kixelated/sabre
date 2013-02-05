@@ -1,6 +1,6 @@
-require 'deploy/command'
+require 'sabre/command'
 
-class Deploy::Git < Deploy::Command
+class Sabre::Git < Sabre::Command
   def clone(options)
     repository = options[:repository]
     directory = options[:directory]
@@ -35,8 +35,8 @@ class Deploy::Git < Deploy::Command
   def update(options)
     directory = options[:directory]
 
-    fetch_command = Deploy::Git.new { fetch(options) }
-    clone_command = Deploy::Git.new { clone(options) }
+    fetch_command = Sabre::Git.new { fetch(options) }
+    clone_command = Sabre::Git.new { clone(options) }
 
     run %{
       if [ -d "#{ directory }/.git" ]; then

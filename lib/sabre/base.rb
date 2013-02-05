@@ -1,4 +1,4 @@
-module Deploy::Base
+module Sabre::Base
   def echo(string)
     run %{ echo "#{ string }" }
   end

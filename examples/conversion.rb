@@ -1,7 +1,7 @@
 require "bundler/setup"
-require "deploy"
+require "sabre"
 
-conversion = Deploy::Command.new do
+conversion = Sabre::Command.new do
   git.update(repository: "ssh://scm.dev.box.net/box/www/conversion",
              directory: "/box/lib/conversion/shared",
              branch: "publish")

@@ -1,8 +1,7 @@
 require "bundler/setup"
+require "sabre"
 
-require "deploy"
-
-errors = Deploy::Command.new do
+errors = Sabre::Command.new do
   run do
     echo "step 1"
     synchronize

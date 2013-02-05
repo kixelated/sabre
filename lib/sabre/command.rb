@@ -1,10 +1,10 @@
 require 'blockenspiel'
 
-require 'deploy/base'
+require 'sabre/base'
 
-class Deploy::Command
+class Sabre::Command
   include Blockenspiel::DSL
-  include Deploy::Base
+  include Sabre::Base
 
   def initialize(&block)
     @commands = Array.new
@@ -16,7 +16,7 @@ class Deploy::Command
 
   def run(command = nil, &block)
     if block
-      command = Deploy::Command.new(&block)
+      command = Sabre::Command.new(&block)
     elsif command.is_a?(String)
       command = unindent(command)
     end
@@ -27,7 +27,7 @@ class Deploy::Command
 
   def on(conditions, &block)
     if block
-      command = Deploy::Command.new(&block)
+      command = Sabre::Command.new(&block)
       command.on(conditions)
 
       run(command)
@@ -52,7 +52,7 @@ class Deploy::Command
 
   def on_error(command = nil, &block)
     if block
-      command = Deploy::Command.new(&block)
+      command = Sabre::Command.new(&block)
     elsif command.is_a?(String)
       command = unindent(command)
     end
@@ -99,7 +99,7 @@ class Deploy::Command
   def method_missing(sym, *args, &block)
     # provides "undef.method" -> "run Undef.new.method"
     klass_name = sym.to_s.capitalize
-    klass = Deploy.const_get(klass_name) rescue nil
+    klass = Sabre.const_get(klass_name) rescue nil
 
     super unless klass
 

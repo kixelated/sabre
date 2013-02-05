@@ -1,6 +1,6 @@
-require 'deploy/command'
+require 'sabre/command'
 
-class Deploy::Bundler < Deploy::Command
+class Sabre::Bundler < Sabre::Command
   def install(options)
     directory = options[:directory]
     without = options[:without]
