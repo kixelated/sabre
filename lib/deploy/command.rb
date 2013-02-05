@@ -1,26 +1,17 @@
 require 'blockenspiel'
 
-class Deploy::Command
-  class << self
-    def method_missing(sym, *args, &block)
-      command = self.new
-      super unless command.respond_to?(sym)
-
-      command.send(sym, *args, &block)
-      command
-    end
-  end
-end
+require 'deploy/base'
 
 class Deploy::Command
   include Blockenspiel::DSL
+  include Deploy::Base
 
   def initialize(&block)
     @commands = Array.new
     @error_commands = Array.new
     @conditions = Array.new
 
-    invoke(&block) if block
+    Blockenspiel.invoke(block, self) if block
   end
 
   def run(command = nil, &block)
@@ -103,30 +94,6 @@ class Deploy::Command
     end
 
     command
-  end
-
-  def echo(string)
-    run "echo \"#{ string }\""
-  end
-
-  def cd(directory)
-    run "cd \"#{ directory }\""
-  end
-
-  def set(name, value)
-    run %{ #{ name }="#{ value }" }
-  end
-
-  def synchronize
-    run %{
-      read -n1 -p "Continue? (y/n) " &&
-      echo &&
-      [[ $REPLY == "y" ]]
-    }
-  end
-
-  def invoke(&block)
-    Blockenspiel.invoke(block, self)
   end
 
   def method_missing(sym, *args, &block)

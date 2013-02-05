@@ -1,4 +1,4 @@
-require "deploy/command"
+require 'deploy/command'
 
 class Deploy::Bundler < Deploy::Command
   def install(options)

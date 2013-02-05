@@ -1,5 +1,7 @@
-require "deploy/command"
 require "deploy/version"
+require "deploy/command"
 
-module Deploy
-end
+require "deploy/base"
+require "deploy/bundler"
+require "deploy/git"
+require "deploy/release"
