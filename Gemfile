@@ -3,4 +3,4 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in deploy.gemspec
 gemspec
 
-gem "blockenspiel"
+gem "voke", :path => "../voke"

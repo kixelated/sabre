@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+require "rubygems"
+
+require "sabre"
+require "voke"
+
+class SabreCLI
+  include Voke
+
+  def run(script = nil, options)
+    puts script.inspect
+    puts options.inspect
+  end
+end
+
+cli = SabreCLI.new
+cli.voke("run", *ARGV)
